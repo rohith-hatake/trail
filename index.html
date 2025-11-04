@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Community Service Portal — Single File (Parallax)</title>
+  
+  <style>
+    /* ---------- Theme & Base ---------- */
+    :root{
+      --bg:#0b0710; --card:#0f0c16; --muted:#9aa0b4;
+      --accent1:#6a4cff; --accent2:#8b5cf6;
+      --glass-border: rgba(255,255,255,0.06);
+      --radius:12px;
+      --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#06040b 0%, #0b0710 100%);color:#eef;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a{color:inherit}
+    .muted{color:var(--muted)}
+    .container{max-width:var(--maxw);margin:0 auto;padding:0 18px}
+
+    /* ---------- Header ---------- */
+    header.app-header{position:fixed;left:12px;right:12px;top:12px;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:14px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(6px);border:1px solid var(--glass-border)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
+    nav.header-nav{display:flex;gap:8px;align-items:center}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;background:transparent;color:inherit;font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#fff;border:none}
+
+    /* ---------- Page Sections (single-file routing) ---------- */
+    main{padding-top:92px}
+    section.page{min-height:70vh;padding:48px 0;position:relative;display:none;transition:opacity .45s ease,transform .45s ease}
+    section.page.active{display:block;opacity:1;transform:none}
+    section.page.entering{opacity:0;transform:translateY(10px)}
+
+    /* ---------- Parallax Hero ---------- */
+    .parallax{
+      position:relative; background-position:center; background-size:cover; background-attachment:fixed; background-repeat:no-repeat;
+      display:flex;align-items:center;justify-content:center;min-height:64vh;border-radius:16px;overflow:hidden;
+    }
+    .parallax .overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(8,4,25,0.55), rgba(0,0,0,0.35));z-index:1}
+    .hero-inner{position:relative;z-index:2;max-width:var(--maxw);padding:36px;text-align:center}
+    .hero-title{font-size:clamp(26px,6vw,44px);margin:0;font-weight:800;line-height:1.02}
+    .hero-sub{margin-top:12px;color:var(--muted)}
+
+    .cta-row{display:flex;gap:14px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+    .card-cta{min-width:170px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);display:inline-flex;align-items:center;gap:10px;justify-content:center;font-weight:700}
+
+    /* ---------- Info Parallax ---------- */
+    .info-grid{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:6vh}
+    .info-card{min-width:260px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03)}
+
+    /* ---------- Cards / Layout ---------- */
+    .panel{padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);margin-bottom:18px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px}
+    .tile{padding:14px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
+    .tile:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(0,0,0,0.45)}
+    .tile h4{margin:0}
+
+    .problems-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    .problem{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.03)}
+    .problem h4{margin:0 0 6px 0}
+    .muted.small{font-size:0.9rem;color:var(--muted)}
+
+    /* forms */
+    form label{display:block;margin-top:10px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .form-row{display:flex;gap:8px;margin-top:12px}
+
+    /* breadcrumbs / back */
+    .breadcrumb{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    .breadcrumb .btn-link{background:transparent;border:none;color:var(--muted);cursor:pointer;text-decoration:underline;padding:0;font-size:0.94rem}
+
+    /* small utilities */
+    .center{display:flex;align-items:center;justify-content:center}
+    footer.site-footer{text-align:center;color:var(--muted);padding:28px 12px;font-size:0.95rem}
+
+    /* responsive */
+    @media (max-width:900px){
+      .grid-2{grid-template-columns:1fr}
+      header.app-header{left:8px;right:8px}
+      .parallax{min-height:48vh}
+    }
+
+    /* small transitions for page changes */
+    .fade-in{animation:fadeIn .45s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">RC</div>
+      <div style="line-height:1">
+        <div style="font-weight:800">Community Service</div>
+        <div style="font-size:12px;color:var(--muted)">College Clubs Collaboration</div>
+      </div>
+    </div>
+
+    <nav class="header-nav">
+      <button class="btn" data-nav="home" onclick="navigate('home')">Home</button>
+      <button class="btn" data-nav="upload" onclick="navigate('upload')">Upload Problem</button>
+      <button id="navLoginBtn" class="btn primary" data-nav="login" onclick="navigate('login')">User Login</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HOME (initial) -->
+    <section id="page-home" class="page active fade-in">
+    
+        <div class="hero-inner container">
+          <h1 class="hero-title">Fix on Campus — One Club at a Time</h1>
+          <p class="hero-sub muted">Report problems, collaborate with clubs, earn ranking & recognition.</p>
+
+          <div class="cta-row" style="margin-top:22px">
+            <button class="card-cta" onclick="navigate('upload')">📤 Upload Problem</button>
+            <button class="card-cta" onclick="navigate('login')">🔐 User Login</button>
+          </div>
+
+          <div style="margin-top:26px" class="muted">Tip: Click <strong>Upload Problem</strong> to submit an issue, or <strong>User Login</strong> to access dashboards.</div>
+        </div>
+      </div>
+
+      <div class="container info-grid" style="margin-top:30px">
+        <div class="info-card panel">
+          <h3>Why this site?</h3>
+          <p class="muted">A portal for clubs to discover and adopt campus problems — promotes collaboration and accountability.</p>
+        </div>
+        <div class="info-card panel">
+          <h3>What's its use?</h3>
+          <p class="muted">Broadcast issues to all clubs, accept tasks, upload completion proof, maintain solved/pending archives, and rank active clubs.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="page-login" class="page entering">
+     
+        <div class="hero-inner container" style="text-align:left;max-width:760px">
+          <div class="panel" style="background:transparent;padding:0">
+            <h2 style="margin:0 0 6px 0">Sign In (Demo)</h2>
+            <p class="muted">Choose a role and sign in. This is a frontend demo — no backend required.</p>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" style="margin-top:12px">
+              <label>
+                <input id="loginName" placeholder="Your name (optional)" />
+              </label>
+
+              <label style="display:block;margin-top:10px">Role:
+                <select id="loginRole" style="margin-left:8px;padding:8px;border-radius:8px">
+                  <option value="admin">Admin Dashboard</option>
+                  <option value="official">Higher Officials</option>
+                  <option value="club">Other Club</option>
+                </select>
+              </label>
+
+              <div class="form-row" style="margin-top:12px">
+                <button class="btn primary" type="submit">Sign In</button>
+                <button class="btn" type="button" onclick="navigate('home')">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page entering">
+      <div class="container">
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <h2 id="dashTitle">Dashboard</h2>
+              <div id="dashSub" class="muted">Overview</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" onclick="signOut()">Sign Out</button>
+              <button class="btn" onclick="navigate('upload')">Upload Problem</button>
+            </div>
+          </div>
+
+          <div class="dashboard-grid" style="margin-top:14px">
+            <div class="tile" onclick="openTasks('pending')"><h4>Pending Problems</h4><div class="muted small">Problems still open</div></div>
+            <div class="tile" onclick="openTasks('solved')"><h4>Solved Problems</h4><div class="muted small">Completed tasks & proofs</div></div>
+            <div class="tile" onclick="openTasks('myuploads')"><h4>My Uploads</h4><div class="muted small">Problems you reported</div></div>
+            <div class="tile" onclick="openTasks('ranking')"><h4>Ranking Table</h4><div class="muted small">Top performing clubs</div></div>
+            <div class="tile" onclick="openTasks('profile')"><h4>Profile / Logout</h4><div class="muted small">Account & settings</div></div>
+          </div>
+        </div>
+
+        <div id="recentPanel" class="panel" style="margin-top:14px">
+          <h3>Recent Uploads</h3>
+          <div id="recentList" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TASKS VIEW -->
+    <section id="page-tasks" class="page entering">
+      <div class="container">
+        <div class="breadcrumb">
+          <button class="btn-link" onclick="navigate('dashboard')">← Back to Dashboard</button>
+        </div>
+
+        <div class="panel">
+          <h2 id="tasksTitle">Tasks</h2>
+          <p id="tasksSub" class="muted">List</p>
+
+          <div id="tasksGrid" class="problems-grid" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPLOAD PAGE -->
+    <section id="page-upload" class="page entering">
+      <div class="container">
+        <div class="panel">
+          <h2>Upload Problem</h2>
+          <p class="muted">Submit a new campus issue. This demo shows a local preview and simulates broadcasting to all clubs.</p>
+
+          <form id="uploadForm" onsubmit="handleUpload(event)">
+            <label>Title
+              <input id="upTitle" required placeholder="e.g. Broken Bench - Block C" />
+            </label>
+
+            <label>Description
+              <textarea id="upDesc" rows="4" required placeholder="Describe the issue in detail"></textarea>
+            </label>
+
+            <label>Image URL (optional)
+              <input id="upPhoto" placeholder="https://..." />
+            </label>
+
+            <label>Audience
+              <select id="upAudience">
+                <option value="all">All Clubs</option>
+                <option value="green">Green Club</option>
+                <option value="service">Service Club</option>
+              </select>
+            </label>
+
+            <div class="form-row">
+              <button class="btn primary" type="submit">Submit & Broadcast</button>
+              <button class="btn" type="button" onclick="navigate('home')">Cancel</button>
+            </div>
+          </form>
+
+          <div id="uploadPreview" class="panel" style="display:none;margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    © <span id="year"></span> Community Service Portal — Frontend Demo
+  </footer>
+
+  <script>
+    /* ---------- Utilities & Demo Data ---------- */
+    const pages = {
+      home: document.getElementById('page-home'),
+      login: document.getElementById('page-login'),
+      dashboard: document.getElementById('page-dashboard'),
+      tasks: document.getElementById('page-tasks'),
+      upload: document.getElementById('page-upload')
+    };
+
+    // demo tasks store (in-memory)
+    let store = {
+      pending: [
+        {id:1, title:'Broken Bench - Block C', desc:'Bench legs broken near Block C. Risky to sit.', photo:'', reporter:'Student A', date:'2025-10-31'},
+        {id:2, title:'Overflowing Dustbin - Canteen', desc:'Canteen dustbins not emptied regularly.', photo:'', reporter:'Staff B', date:'2025-10-28'}
+      ],
+      solved: [
+        {id:11, title:'Painted Fence - Garden', desc:'Fence repainted by Green Club.', photo:'https://images.unsplash.com/photo-1553456558-aff63285bdd2?auto=format&fit=crop&w=1000&q=60', reporter:'Green Club', date:'2025-09-12'}
+      ],
+      myuploads: []
+    };
+
+    // ranking sample
+    const ranking = [
+      {club:'Green Club', score:28},
+      {club:'Service Club', score:21},
+      {club:'Rotaract Club', score:19}
+    ];
+
+    // page init
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // SPA navigation
+    function navigate(name){
+      // hide all
+      Object.values(pages).forEach(p=>{
+        p.classList.remove('active','entering'); p.style.display='none';
+      });
+      const el = pages[name];
+      if(!el) return console.warn('no page',name);
+      el.classList.add('active','fade-in');
+      el.style.display='block';
+      // small scroll top
+      window.scrollTo({top:0,behavior:'smooth'});
+      // post-navigation actions
+      if(name==='dashboard') renderDashboard();
+      if(name==='home') { /* nothing */ }
+      if(name==='upload') { document.getElementById('uploadPreview').style.display='none'; }
+      if(name==='login') { /* nothing */ }
+    }
+
+    // initial: show home first (already active)
+    // login handling (dummy)
+    function handleLogin(evt){
+      evt.preventDefault();
+      const name = document.getElementById('loginName').value.trim();
+      const role = document.getElementById('loginRole').value;
+      // store in session for demo behaviour
+      sessionStorage.setItem('demoUser', JSON.stringify({name:name||'Demo User', role}));
+      // navigate to dashboard
+      navigate('dashboard');
+    }
+
+    function signOut(){
+      sessionStorage.removeItem('demoUser');
+      navigate('home');
+    }
+
+    // render dashboard content
+    function renderDashboard(){
+      const info = JSON.parse(sessionStorage.getItem('demoUser') || '{"name":"Guest","role":"club"}');
+      document.getElementById('dashTitle').textContent = (info.role==='admin')? 'Admin Dashboard' : (info.role==='official')? 'Higher Officials Dashboard' : 'Club Dashboard';
+      document.getElementById('dashSub').textContent = `Signed in as ${info.name} • Role: ${info.role}`;
+      // recent uploads list
+      const rlist = document.getElementById('recentList'); rlist.innerHTML='';
+      const merged = [...store.pending.slice(0,5), ...store.solved.slice(0,5)];
+      merged.slice(0,6).forEach(item=>{
+        const d = document.createElement('div');
+        d.style.padding='10px 0'; d.style.borderBottom='1px dashed rgba(255,255,255,0.02)';
+        d.innerHTML = `<strong>${item.title}</strong><div class="muted small">by ${item.reporter || 'Unknown'} • ${item.date || ''}</div>`;
+        rlist.appendChild(d);
+      });
+    }
+
+    // open tasks view for a particular section
+    function openTasks(view){
+      navigate('tasks');
+      // set titles
+      const mapping = {
+        pending: {title:'Pending Problems', sub:'Problems not yet accepted or solved'},
+        solved: {title:'Solved Problems', sub:'Completed problems with proof'},
+        myuploads: {title:'My Uploads', sub:'Problems you reported'},
+        ranking: {title:'Ranking Table', sub:'Top performing clubs'},
+        profile: {title:'Profile', sub:'Your account details'}
+      };
+      const meta = mapping[view] || mapping.pending;
+      document.getElementById('tasksTitle').textContent = meta.title;
+      document.getElementById('tasksSub').textContent = meta.sub;
+      const grid = document.getElementById('tasksGrid'); grid.innerHTML='';
+
+      if(view==='ranking'){
+        ranking.forEach(r=>{
+          const el = document.createElement('div'); el.className='problem';
+          el.innerHTML = `<h4>${r.club}</h4><p class="muted small">Solved: ${r.score}</p>`;
+          grid.appendChild(el);
+        });
+        return;
+      }
+
+      if(view==='profile'){
+        const info = JSON.parse(sessionStorage.getItem('demoUser') || '{"name":"Guest","role":"club"}');
+        const el = document.createElement('div'); el.className='problem';
+        el.innerHTML = `<h4>${info.name}</h4><p class="muted small">Role: ${info.role}</p><div style="margin-top:10px"><button class="btn primary" onclick="signOut()">Sign Out</button></div>`;
+        grid.appendChild(el);
+        return;
+      }
+
+      // show list based on view
+      const rows = (view==='pending')? store.pending : (view==='solved')? store.solved : (view==='myuploads')? store.myuploads : [];
+      if(rows.length===0){
+        const none = document.createElement('div'); none.className='panel muted'; none.textContent = 'No items to show.';
+        grid.appendChild(none);
+        return;
+      }
+      rows.forEach(r=>{
+        const d = document.createElement('div'); d.className='problem';
+        d.innerHTML = `<h4>${r.title}</h4><p class="muted small">${r.desc}</p><div style="display:flex;gap:8px;margin-top:10px"><button class="btn" onclick="acceptThis(${r.id})">Accept</button><button class="btn" onclick="viewProof('${encodeURIComponent(r.photo || '')}')">View Proof</button></div>`;
+        grid.appendChild(d);
+      });
+    }
+
+    // Accept simulated
+    function acceptThis(id){
+      const itemIndex = store.pending.findIndex(p=>p.id===id);
+      if(itemIndex===-1) return alert('Item not found.');
+      const confirmed = confirm('Accept this problem? (Demo)');
+      if(!confirmed) return;
+      // move to myuploads for demo
+      const item = store.pending.splice(itemIndex,1)[0];
+      store.myuploads.push({...item, status:'Accepted'});
+      alert('Accepted. Please contact higher officials from your dashboard if needed.');
+      // refresh tasks view
+      openTasks('myuploads');
+    }
+
+    function viewProof(encodedUrl){
+      const url = decodeURIComponent(encodedUrl);
+      if(!url) return alert('No proof image available for this item (demo).');
+      // open in new tab
+      window.open(url,'_blank');
+    }
+
+    /* ---------- Upload handling (frontend demo) ---------- */
+    function handleUpload(e){
+      e.preventDefault();
+      const title = document.getElementById('upTitle').value.trim();
+      const desc  = document.getElementById('upDesc').value.trim();
+      const photo = document.getElementById('upPhoto').value.trim();
+      const audience = document.getElementById('upAudience').value;
+      if(!title || !desc) return alert('Please add title and description.');
+
+      // generate id and date
+      const id = Math.floor(Math.random()*9000)+100;
+      const date = new Date().toISOString().slice(0,10);
+      const record = {id,title,desc,photo,reporter:(JSON.parse(sessionStorage.getItem('demoUser')||'{}')||{}).name || 'Anonymous',date};
+
+      // add to store.pending and myuploads if reporter signed in
+      store.pending.unshift(record);
+      const usr = JSON.parse(sessionStorage.getItem('demoUser')||'{}');
+      if(usr && usr.name) store.myuploads.unshift(record);
+
+      // show preview
+      const preview = document.getElementById('uploadPreview');
+      preview.style.display='block';
+      preview.innerHTML = `<h3 style="margin-top:0">Preview — Broadcast to: ${audience}</h3>
+        <strong>${escapeHTML(title)}</strong>
+        <p class="muted small">${escapeHTML(desc)}</p>
+        ${photo?`<img src="${escapeHTML(photo)}" style="width:100%;max-height:260px;object-fit:cover;border-radius:8px;margin-top:8px">`:''}
+        <div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="navigate('dashboard')">Go to Dashboard</button><button class="btn" onclick="document.getElementById('uploadPreview').style.display='none'">Close Preview</button></div>
+      `;
+
+      // scroll to preview
+      preview.scrollIntoView({behavior:'smooth'});
+
+      // (In a real app: send to backend -> broadcast to clubs)
+      console.log('Broadcasted (demo):', record, 'audience:', audience);
+      // reset form
+      document.getElementById('uploadForm').reset();
+    }
+
+    /* ---------- Small helpers ---------- */
+    function escapeHTML(s){ return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+    /* ---------- Parallax subtle motion for non-fixed backgrounds (progressive enhancement) ---------- */
+    (function(){
+      // Some browsers mobile ignore background-attachment:fixed; also add a JS transform to enhance parallax
+      const paras = document.querySelectorAll('.parallax');
+      function onScroll(){
+        const top = window.scrollY;
+        paras.forEach((el,i)=>{
+          const speed = 0.18 + (i*0.03);
+          // compute offset - smaller translate to keep it subtle
+          el.style.backgroundPosition = `center calc(50% + ${top * speed}px)`;
+        });
+      }
+      window.addEventListener('scroll', onScroll, {passive:true});
+      // initial call
+      onScroll();
+    })();
+
+    /* ---------- On load: show home and set button text depending on session ---------- */
+    (function init(){
+      // default show home
+      navigate('home');
+      const user = JSON.parse(sessionStorage.getItem('demoUser') || 'null');
+      if(user){
+        document.getElementById('navLoginBtn').textContent = user.name || 'Dashboard';
+        document.getElementById('navLoginBtn').onclick = ()=> navigate('dashboard');
+      }
+    })();
+
+  </script>
+
+</body>
+</html>
